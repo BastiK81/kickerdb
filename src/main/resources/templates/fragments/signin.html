@@ -1,0 +1,19 @@
+<div th:fragment="signin">
+    <div class="container">
+        <form class="form-signin" method="post" action="/login">
+            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+            <div class="form-floating mb-3">
+                <input type="text" id="username" name="username" class="form-control-sm" placeholder="Username" required="" autofocus="">
+            </div>
+            <div class="form-floating mb-3">    
+                <input type="password" id="password" name="password" class="form-control-sm" placeholder="Password" required="">
+            </div>
+            <div class="checkbox mb-3">
+                <label>
+                    <input id="remember-me" name="remember-me" type="checkbox" value="remember-me"> Remember me
+                </label>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+    </div>
+</div>
