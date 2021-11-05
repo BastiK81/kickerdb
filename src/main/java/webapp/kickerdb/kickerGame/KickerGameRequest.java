@@ -14,6 +14,13 @@ public class KickerGameRequest {
     private int scoreOne;
     private int scoreTwo;
 
+    public KickerGameRequest(String playerOne, String playerTwo, String playerThree, String playerFour) {
+        this.playerOne = playerOne;
+        this.playerTwo = playerTwo;
+        this.playerThree = playerThree;
+        this.playerFour = playerFour;
+    }
+
     public KickerGameRequest(String playerOne, String playerTwo, String playerThree, String playerFour, int scoreOne, int scoreTwo) {
         this.playerOne = playerOne;
         this.playerTwo = playerTwo;

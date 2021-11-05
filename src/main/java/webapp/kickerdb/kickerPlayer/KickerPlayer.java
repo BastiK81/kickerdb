@@ -22,17 +22,23 @@ public class KickerPlayer {
     )
     private Long id;
     private String userName;
+    private boolean active;
+
+    public KickerPlayer() {
+    }
 
     public KickerPlayer(String userName) {
         this.userName = userName;
-    }
-
-    public KickerPlayer() {
+        this.active = true;
     }
 
     public KickerPlayer(Long id, String userName) {
         super();
         this.id = id;
         this.userName = userName;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

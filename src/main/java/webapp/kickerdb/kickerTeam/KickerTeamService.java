@@ -3,6 +3,7 @@ package webapp.kickerdb.kickerTeam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,5 +22,9 @@ public class KickerTeamService {
     private Long addKickerTeam(KickerTeam kickerTeam){
         KickerTeam savedTeam = kickerTeamRepository.save(kickerTeam);
         return savedTeam.getId();
+    }
+
+    public List<KickerTeam> findAllTeamsWithPlayer(Long id) {
+        return kickerTeamRepository.findByPlayerDefensiveOrPlayerOffensive(id, id);
     }
 }

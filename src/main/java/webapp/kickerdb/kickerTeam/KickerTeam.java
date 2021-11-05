@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "kickerTeams")
-public class KickerTeam {
+public class KickerTeam{
 
     @SequenceGenerator(
             name = "kickerTeamSequence",
@@ -45,7 +45,21 @@ public class KickerTeam {
         this.side = side;
     }
 
+    public KickerTeam(Long playerDefensive, Long playerOffensive) {
+        super();
+        this.playerDefensive = playerDefensive;
+        this.playerOffensive = playerOffensive;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public Long getPlayerDefensive() {
+        return playerDefensive;
+    }
+
+    public Long getPlayerOffensive() {
+        return playerOffensive;
     }
 }
