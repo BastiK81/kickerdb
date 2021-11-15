@@ -33,4 +33,13 @@ public class KickerForecastController {
         List<KickerPlayer> responseItem = kickerForecastService.getPlayerForecast();
         return new ResponseEntity<>(responseItem, responseHeaders, responseCode);
     }
+
+    @GetMapping(path = "/kickerForecast/getGameForecast")
+    public ResponseEntity<List<KickerPlayer>> getGameForecast() {
+        HttpStatus responseCode = HttpStatus.OK;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("Content-Type", "application/json");
+        List<KickerPlayer> responseItem = kickerForecastService.getGameForecast();
+        return new ResponseEntity<>(responseItem, responseHeaders, responseCode);
+    }
 }

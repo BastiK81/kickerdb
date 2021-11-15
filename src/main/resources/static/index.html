@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="de">
   <head>
-    <title>Elo Master</title>
+    <title>Kicker DB</title>
     <meta charset="UTF-8">
     <script src="js/script.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
   </head>
   <body onload="loadPage()">
-    <div class="container-fluid">
+    <div class="container-fluid overflow-hidden">
       <!-- Top Row -->
-      <div class="row"> 
-        <div class="col-12 mb-3"></div>
+      <div class="row gy-5"> 
+        <div class="col-12">
+          <div class="p-4"><h1>Kicker Datenbank</h1></div>
+
+          
+        </div>
       </div>
       <!-- First Row-->
-      <div class="row">
+      <div class="row gy-5">
         <!-- Whitespace First Row-->
         <div class="col-1">
 
@@ -22,9 +26,7 @@
         <!-- Ranking First Row -->
         <div class="col-4">
 
-          <div class="mb-3"> 
-            <h2>Ranking</h2>
-          </div>
+          <div class="p-3"><h2><b> -- Ranking -- </b></h2></div>
           <table class="table table-striped table-bordered border-dark">
             <thead>
               <tr class="table-dark">
@@ -39,7 +41,7 @@
             <tbody id="myTable">
             </tbody>
           </table>
-          <button id="restCohGameTable" type="button" class="btn btn-primary mb-3" onclick="buildTable()">Reload Table</button>
+        <!--  <button id="restCohGameTable" type="button" class="btn btn-primary mb-3" onclick="buildTable()">Reload Table</button> -->
         </div>
         <div class="col-1">
 
@@ -48,14 +50,14 @@
         <div class="col-5">
           <!-- Add Game -->
           <div class="row">
-            <h2>Add Game</h2>
+            <div class="p-3"><h2><b> -- Add Game -- </b></h2></div>
           </div>
           <div class="row">
             <!-- White Team -->
             <div class="col-5">
 
               <div class="input-group mb-3">
-                <h3><b>White</b></h3>
+                <h3> White Team </h3>
               </div>
 
               <div class="input-group mb-3">
@@ -83,7 +85,7 @@
             <div class="col-5">
 
               <div class="input-group mb-3">
-                <h3><b>Black</b></h3>
+                <h3>Black Team</h3>
               </div>
 
               <div class="input-group mb-3">
@@ -109,19 +111,24 @@
             
           </div>
           <div class="row">
-            <div class="col-4">
+            <div class="col-3">
               <div class="input-group mb-3">
                 <button class="btn btn-primary" id="addgame" onclick="sendGame()" type="submit">Add Game</button>
               </div>
             </div>
-            <div class="col-4">
+            <div class="col-3">
               <div class="input-group mb-3">
                 <button class="btn btn-primary" id="addgame" onclick="getForecast('/kickerForecast/getTeamForecast')" type="submit">Team Forecast</button>
               </div>
             </div>
-            <div class="col-4">
+            <div class="col-3">
               <div class="input-group mb-3">
                 <button class="btn btn-primary" id="addgame" onclick="getForecast('/kickerForecast/getPlayerForecast')" type="submit">Player Forecast</button>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="input-group mb-3">
+                <button class="btn btn-primary" id="addgame" onclick="getForecast('/kickerForecast/getGameForecast')" type="submit">Game Forecast</button>
               </div>
             </div>
           </div>
@@ -130,7 +137,7 @@
           <div class="row">
             <div class="col-12">
               <div class="input-group mb-3"> 
-                <H2>Add Player</H2>
+                <div class="p-3"><h2><b> -- Add Player -- </b></h2></div>
               </div>  
               <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1">@</span>
@@ -145,7 +152,7 @@
             <div class="col-12">
 
               <div class="input-group mb-3">
-                <h2>Playermanagement</h2>
+                <div class="p-3"><h2><b> -- Player Management -- </b></h2></div>
               </div>
 
               <div class="input-group mb-3">

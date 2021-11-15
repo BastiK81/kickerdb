@@ -20,32 +20,21 @@ public class KickerTeam{
 
     private Long playerDefensive;
     private Long playerOffensive;
-    private int side;
 
     public KickerTeam() {
     }
 
     public KickerTeam(Long id,
                       Long playerDefensive,
-                      Long playerOffensive,
-                      int side) {
+                      Long playerOffensive) {
         super();
         this.id = id;
         this.playerDefensive = playerDefensive;
         this.playerOffensive = playerOffensive;
-        this.side = side;
     }
 
     public KickerTeam(Long playerDefensive,
-                      Long playerOffensive,
-                      int side) {
-        super();
-        this.playerDefensive = playerDefensive;
-        this.playerOffensive = playerOffensive;
-        this.side = side;
-    }
-
-    public KickerTeam(Long playerDefensive, Long playerOffensive) {
+                      Long playerOffensive) {
         super();
         this.playerDefensive = playerDefensive;
         this.playerOffensive = playerOffensive;

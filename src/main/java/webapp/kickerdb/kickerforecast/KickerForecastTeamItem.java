@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class KickerForecastTeam implements Comparable {
+public class KickerForecastTeamItem implements Comparable {
 
     private Long idOne;
     private Long idTwo;
@@ -14,15 +14,15 @@ public class KickerForecastTeam implements Comparable {
     private int games;
     private int singleGames;
 
-    public KickerForecastTeam(Long playerDefensiveId, Long playerOffensiveId) {
+    public KickerForecastTeamItem(Long playerDefensiveId, Long playerOffensiveId) {
         this.playerDefensiveId = playerDefensiveId;
         this.playerOffensiveId = playerOffensiveId;
     }
 
     @Override
     public int compareTo(Object o) {
-        if (o instanceof KickerForecastTeam) {
-            KickerForecastTeam other = (KickerForecastTeam) o;
+        if (o instanceof KickerForecastTeamItem) {
+            KickerForecastTeamItem other = (KickerForecastTeamItem) o;
             if (this.games < other.games) {
                 return -1;
             }

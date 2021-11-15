@@ -98,8 +98,8 @@ public class KickerGameService {
         if (playerIdFour == 0L)
             return String.format("Player %s not found", kickerGameRequest.getPlayerFour());
 
-        Long teamOne = kickerTeamService.getKickerTeamId(playerIdOne, playerIdTwo, 1);
-        Long teamTwo = kickerTeamService.getKickerTeamId(playerIdThree, playerIdFour, 2);
+        Long teamOne = kickerTeamService.getKickerTeamId(playerIdOne, playerIdTwo);
+        Long teamTwo = kickerTeamService.getKickerTeamId(playerIdThree, playerIdFour);
 
         int winner = 0;
         if (kickerGameRequest.getScoreOne() > kickerGameRequest.getScoreTwo())
@@ -128,5 +128,10 @@ public class KickerGameService {
             countGames += games.size();
         }
         return countGames;
+    }
+
+    public int getGamePlayedGames(Long teamOne, Long teamTwo) {
+        List<KickerGame> games = kickerGameRepository.findByTeamOneAndTeamTwo(teamOne, teamTwo);
+        return games.size();
     }
 }
