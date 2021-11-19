@@ -15,202 +15,111 @@ import java.util.*;
 public class KickerForecastService {
 
     @Autowired
-    KickerPlayerService kickerPlayerService;
+    KickerPlayerService playerService;
 
     @Autowired
-    KickerTeamService kickerTeamService;
+    KickerTeamService teamService;
 
     @Autowired
-    KickerGameService kickerGameService;
+    KickerGameService gameService;
 
     @Autowired
-    KickerForecastCrawler kickerForecastCrawler;
+    KickerForecastCommunicator communicator;
 
     @Autowired
     private KickerForecastRepository forecastRepository;
 
     public List<KickerPlayer> getTeamForecast() {
-        List<KickerForecastTeamItem> allPossibleTeams = kickerForecastCrawler.getAllPossibleTeams();
-        return kickerForecastCrawler.getForecast(allPossibleTeams);
+        List<Long> allActivPlayerIds = this.getAllActivePlayerIds();
+        List<KickerForecastTeamItem> teamItems = getTeamItems();
+        List<KickerPlayer> forecast = new ArrayList<>();
+        for (KickerForecastTeamItem team : teamItems
+        ) {
+            if (allActivPlayerIds.contains(team.getPlayerOffensiveId()) && allActivPlayerIds.contains(team.getPlayerDefensiveId())) {
+                forecast.add(playerService.getPlayerById(team.getPlayerDefensiveId()));
+                forecast.add(playerService.getPlayerById(team.getPlayerOffensiveId()));
+                allActivPlayerIds.remove(team.getPlayerDefensiveId());
+                allActivPlayerIds.remove(team.getPlayerOffensiveId());
+            }
+            if (forecast.size() == 4)
+                break;
+        }
+        return forecast;
+    }
+
+    private List<Long> getAllActivePlayerIds(){
+        List<Long> allActivePlayerIds = new ArrayList<>();
+        List<KickerPlayer> allActivePlayer = playerService.getAllActivePlayer();
+        for (KickerPlayer player:allActivePlayer
+             ) {
+            allActivePlayerIds.add(player.getId());
+        }
+        return allActivePlayerIds;
     }
 
     public List<KickerPlayer> getPlayerForecast() {
-        List<KickerPlayer> players = kickerPlayerService.getAllActive();
-        List<KickerForecastPlayerItem> kickerForecastPlayerItems = new ArrayList<>();
-        for (KickerPlayer player:players
-            ) {
-            KickerForecastPlayerItem playerItem = new KickerForecastPlayerItem(player.getId(), player.getUserName());
-            playerItem.setGames(kickerGameService.getPlayerPlayedGames(player.getId()));
-            kickerForecastPlayerItems.add(playerItem);
-        }
-        Collections.sort(kickerForecastPlayerItems);
-        List<KickerTeam> teamsTemp = null;
-        List<KickerTeam> teamsAdd;
-        int count = 1;
-        List<Long> playerIds = new ArrayList<>();
-        for (KickerForecastPlayerItem item:kickerForecastPlayerItems
-        ) {
-            if (count < 2) {
-                playerIds.add(item.getId());
-                teamsTemp = kickerTeamService.findAllTeamsWithPlayer(item.getId());
-                count++;
-            } else if (count < 5) {
-                playerIds.add(item.getId());
-                teamsAdd = kickerTeamService.findAllTeamsWithPlayer(item.getId());
-                teamsTemp = union(teamsTemp, teamsAdd);
-                count++;
-            }
-        }
-
-        List<KickerTeam> teams = new ArrayList<>();
-        for (KickerTeam team:teamsTemp
-            ) {
-            if (playerIds.contains(team.getPlayerDefensive()))
-                if (playerIds.contains(team.getPlayerOffensive()))
-                    teams.add(team);
-        }
-        List<KickerForecastTeamItem> allPossibleTeams = new ArrayList<>();
-        for (KickerTeam team:teams
-            ) {
-            KickerForecastTeamItem kickerForecastTeamItem = new KickerForecastTeamItem(team.getPlayerDefensive(), team.getPlayerOffensive());
-            kickerForecastTeamItem.setIdOne(kickerTeamService.getKickerTeamId(team.getPlayerDefensive(), team.getPlayerOffensive()));
-            kickerForecastTeamItem.setIdTwo(kickerTeamService.getKickerTeamId(team.getPlayerDefensive(), team.getPlayerOffensive()));
-            kickerForecastTeamItem.setGames(kickerGameService.getGameCountAllGames(kickerForecastTeamItem.getIdOne(), kickerForecastTeamItem.getIdTwo()));
-            int singleGames = kickerGameService.getPlayerPlayedGames(kickerForecastTeamItem.getPlayerDefensiveId());
-            singleGames += kickerGameService.getPlayerPlayedGames(kickerForecastTeamItem.getPlayerOffensiveId());
-            kickerForecastTeamItem.setSingleGames(singleGames);
-            allPossibleTeams.add(kickerForecastTeamItem);
-        }
-        Collections.sort(allPossibleTeams);
-        int mark = 5;
+        List<KickerForecastPlayerItem> playerItems = getPlayerItems();
+        List<KickerForecastTeamItem> teamItems = getTeamItems();
+        List<Long> lastFourPlayerIds = getLastFourPlayerIds(playerItems);
         List<KickerPlayer> forecast = new ArrayList<>();
-        for (int i = 0; i < allPossibleTeams.size(); i++) {
-            for (int j = 0; j < allPossibleTeams.size(); j++) {
-                String defensiveOne = kickerPlayerService.getPlayerNameByID(allPossibleTeams.get(i).getPlayerDefensiveId());
-                String offensiveOne = kickerPlayerService.getPlayerNameByID(allPossibleTeams.get(i).getPlayerOffensiveId());
-                String defensiveTwo = kickerPlayerService.getPlayerNameByID(allPossibleTeams.get(j).getPlayerDefensiveId());
-                String offensiveTwo = kickerPlayerService.getPlayerNameByID(allPossibleTeams.get(j).getPlayerOffensiveId());
-                KickerGameRequest kickerGameRequest = new KickerGameRequest(defensiveOne,offensiveOne,defensiveTwo,offensiveTwo);
-                String doublePlayer = kickerGameService.getDoublePlayer(kickerGameRequest);
-                if (doublePlayer.isBlank()) {
-                    forecast.add(kickerPlayerService.getPlayerByID(allPossibleTeams.get(i).getPlayerDefensiveId()));
-                    forecast.add(kickerPlayerService.getPlayerByID(allPossibleTeams.get(i).getPlayerOffensiveId()));
-                    forecast.add(kickerPlayerService.getPlayerByID(allPossibleTeams.get(j).getPlayerDefensiveId()));
-                    forecast.add(kickerPlayerService.getPlayerByID(allPossibleTeams.get(j).getPlayerOffensiveId()));
-                    return forecast;
-                }
-                if (j == mark) {
-                    i += 1;
-                    j = 0;
-                    if (i == mark) {
-                        i = 0;
-                        j = 0;
-                        mark += 5;
-                    }
-                }
+        for (KickerForecastTeamItem team : teamItems
+        ) {
+            if (lastFourPlayerIds.contains(team.getPlayerOffensiveId()) && lastFourPlayerIds.contains(team.getPlayerDefensiveId())) {
+                forecast.add(playerService.getPlayerById(team.getPlayerDefensiveId()));
+                forecast.add(playerService.getPlayerById(team.getPlayerOffensiveId()));
+                lastFourPlayerIds.remove(team.getPlayerDefensiveId());
+                lastFourPlayerIds.remove(team.getPlayerOffensiveId());
             }
         }
         return forecast;
     }
 
-    private <KickerTeam> List<KickerTeam> union(List<KickerTeam> list1, List<KickerTeam> list2) {
-        Set<KickerTeam> set = new HashSet<KickerTeam>();
+    private List<KickerForecastPlayerItem> getPlayerItems(){
+        List<KickerPlayer> players = playerService.getAllActivePlayer();
+        List<KickerForecastPlayerItem> playerItems = new ArrayList<>();
+        for (KickerPlayer player:players
+        ) {
+            KickerForecastPlayerItem playerItem = new KickerForecastPlayerItem(player.getId(), player.getUserName());
+            int gameCount = gameService.getCountOfAllGamesWithPlayerId(player.getId());
+            playerItem.setGames(gameCount);
+            playerItems.add(playerItem);
+        }
+        Collections.sort(playerItems);
+        return playerItems;
+    }
 
-        set.addAll(list1);
-        set.addAll(list2);
+    private List<KickerForecastTeamItem> getTeamItems() {
+        List<KickerTeam> teams = teamService.getAllTeams();
+        List<KickerForecastTeamItem> teamItems = new ArrayList<>();
+        for (KickerTeam team:teams
+        ) {
+            KickerForecastTeamItem teamItem = new KickerForecastTeamItem(team.getPlayerDefensive(), team.getPlayerOffensive());
+            int gameCount = gameService.getCountOfAllGamesWithTeamId(team.getId());
+            teamItem.setGames(gameCount);
+            gameCount = gameService.getCountOfAllGamesWithPlayerId(team.getPlayerDefensive()) + gameService.getCountOfAllGamesWithPlayerId(team.getPlayerOffensive());
+            teamItem.setSingleGames(gameCount);
+            teamItems.add(teamItem);
+        }
+        Collections.sort(teamItems);
+        return teamItems;
+    }
 
-        return new ArrayList<KickerTeam>(set);
+    private List<Long> getLastFourPlayerIds(List<KickerForecastPlayerItem> playerItems ){
+        List<Long> lastFourPlayerIds = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            lastFourPlayerIds.add(playerItems.get(i).getId());
+        }
+        return lastFourPlayerIds;
     }
 
     public List<KickerPlayer> getGameForecast() {
-        List<KickerForecastGameItem> allPossibleGames = getAllPossibleGames();
-        return setForecastOfAllPossibleGames(allPossibleGames);
-    }
-
-    private List<KickerForecastGameItem> getAllPossibleGames(){
-        List<KickerPlayer> players = kickerPlayerService.getAllActive();
-        List<KickerForecastGameItem> allPossibleGames = new ArrayList<>();
-        for (KickerPlayer playerOne:players
-            ) {
-            List<Long> playerIds = new ArrayList<>();
-            playerIds.add(playerOne.getId());
-            for (KickerPlayer playerTwo:players
-            ) {
-                if (playerIds.contains(playerTwo.getId()))
-                    continue;
-                playerIds.add(playerTwo.getId());
-                for (KickerPlayer playerThree:players
-                ) {
-                    if (playerIds.contains(playerThree.getId()))
-                        continue;
-                    playerIds.add(playerThree.getId());
-                    for (KickerPlayer playerFour:players
-                    ) {
-                        if (playerIds.contains(playerFour.getId()))
-                            continue;
-                        playerIds.add(playerFour.getId());
-                        Long teamOneId = kickerTeamService.getKickerTeamId(playerOne.getId(), playerTwo.getId());
-                        Long teamTwoId = kickerTeamService.getKickerTeamId(playerThree.getId(), playerFour.getId());
-                        int games = kickerGameService.getGamePlayedGames(teamOneId, teamTwoId);
-                        int teamGames = this.getAllTeamsGames(playerIds);
-                        int playerGames = this.getPlayerGames(playerIds);
-                        allPossibleGames.add(new KickerForecastGameItem(teamOneId, playerOne.getId(), playerTwo.getId(), teamTwoId, playerThree.getId(), playerFour.getId(), games, teamGames, playerGames));
-                    }
-                }
-            }
+        List<KickerForecastGameItem> allPossibleGames = this.communicator.getAllPossibleGames();
+        for (KickerForecastGameItem game:allPossibleGames
+             ) {
+            int gamesCounter = this.communicator.getGameCountWithTeamOneIdAndTeamTwoId(game.getTeamOneId(), game.getTeamTwoId());
+            game.setGames(gamesCounter);
+            gamesCounter = this.communicator.
         }
-        Collections.sort(allPossibleGames);
-        return allPossibleGames;
-    }
-
-    private int getAllTeamsGames(List<Long> playerIds) {
-        List<KickerTeam> teams = kickerTeamService.getAllTeamsWithPlayerId(playerIds.get(0), playerIds.get(1));
-        teams = union(teams, kickerTeamService.getAllTeamsWithPlayerId(playerIds.get(2), playerIds.get(3)));
-        int games = 0;
-        for (KickerTeam team:teams
-            ) {
-            games += kickerGameService.getGameCountAllGames(team.getId(), team.getId());
-        }
-        return games;
-    }
-
-    private int getPlayerGames(List<Long> playerIds){
-        int countGames = 0;
-        for (Long playerId:playerIds
-            ) {
-            countGames += kickerGameService.getPlayerPlayedGames(playerId);
-        }
-        return countGames;
-    }
-
-    private List<KickerPlayer> setForecastOfAllPossibleGames(List<KickerForecastGameItem> allPossibleGames) {
-        List<KickerPlayer> forecast = new ArrayList<>();
-        forecast.add(kickerPlayerService.getPlayerByID(allPossibleGames.get(0).getTeamOneDefensiveId()));
-        forecast.add(kickerPlayerService.getPlayerByID(allPossibleGames.get(0).getTeamOneOffensiveId()));
-        forecast.add(kickerPlayerService.getPlayerByID(allPossibleGames.get(0).getTeamTwoDefensiveId()));
-        forecast.add(kickerPlayerService.getPlayerByID(allPossibleGames.get(0).getTeamTwoOffensiveId()));
-        return forecast;
-    }
-
-    public void addAllPossibleGames(List<KickerTeam> allPossibleTeams) {
-        for (int i = 0; i < allPossibleTeams.size(); i++) {
-            for (int j = 0; j < allPossibleTeams.size(); j++) {
-                if (i == j)
-                    continue;
-                KickerTeam teamOne = allPossibleTeams.get(i);
-                KickerTeam teamTwo = allPossibleTeams.get(j);
-                List<Long> playerIds = new ArrayList<>();
-                playerIds.add(teamOne.getPlayerDefensive());
-                playerIds.add(teamOne.getPlayerOffensive());
-                if (playerIds.contains(teamTwo.getPlayerDefensive()))
-                    continue;
-                if (playerIds.contains(teamTwo.getPlayerOffensive()))
-                    continue;
-                if (!this.forecastRepository.findByTeamOneIdAndTeamTwoId(teamOne.getId(), teamTwo.getId()).isEmpty())
-                    continue;
-                KickerForecastGameItem item = new KickerForecastGameItem(teamOne.getId(), teamOne.getPlayerDefensive(), teamOne.getPlayerOffensive(), teamTwo.getId(), teamTwo.getPlayerDefensive(), teamTwo.getPlayerOffensive());
-                this.forecastRepository.save(item);
-            }
-        }
+        return
     }
 }

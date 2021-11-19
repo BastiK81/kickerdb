@@ -14,14 +14,14 @@ import java.util.List;
 public class KickerForecastController {
 
     @Autowired
-    public KickerForecastService kickerForecastService;
+    public KickerForecastService forecastService;
 
     @GetMapping(path = "/kickerForecast/getTeamForecast")
     public ResponseEntity<List<KickerPlayer>> getTeamForecast() {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "application/json");
-        List<KickerPlayer> responseItem = kickerForecastService.getTeamForecast();
+        List<KickerPlayer> responseItem = forecastService.getTeamForecast();
         return new ResponseEntity<>(responseItem, responseHeaders, responseCode);
     }
 
@@ -30,7 +30,7 @@ public class KickerForecastController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "application/json");
-        List<KickerPlayer> responseItem = kickerForecastService.getPlayerForecast();
+        List<KickerPlayer> responseItem = forecastService.getPlayerForecast();
         return new ResponseEntity<>(responseItem, responseHeaders, responseCode);
     }
 
@@ -39,7 +39,7 @@ public class KickerForecastController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "application/json");
-        List<KickerPlayer> responseItem = kickerForecastService.getGameForecast();
+        List<KickerPlayer> responseItem = forecastService.getGameForecast();
         return new ResponseEntity<>(responseItem, responseHeaders, responseCode);
     }
 }

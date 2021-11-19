@@ -7,8 +7,7 @@ import lombok.Setter;
 @Setter
 public class KickerForecastTeamItem implements Comparable {
 
-    private Long idOne;
-    private Long idTwo;
+    private Long id;
     private Long playerDefensiveId;
     private Long playerOffensiveId;
     private int games;

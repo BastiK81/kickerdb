@@ -16,14 +16,14 @@ import java.util.List;
 public class KickerPlayerController {
 
     @Autowired
-    private KickerPlayerService kickerPlayerService;
+    private KickerPlayerService playerService;
 
     @PostMapping(path = "/kickerPlayer/addPlayer", consumes = "application/json")
     public ResponseEntity<String> addUser(@RequestBody KickerPlayer kickerPlayer) {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "text/plain");
-        String response = kickerPlayerService.addKickerPlayer(kickerPlayer);
+        String response = playerService.addKickerPlayer(kickerPlayer);
         return new ResponseEntity<>(response, responseHeaders, responseCode);
     }
 
@@ -32,7 +32,7 @@ public class KickerPlayerController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "application/json");
-        List<KickerPlayer> responseList = kickerPlayerService.getAll();
+        List<KickerPlayer> responseList = playerService.getAllPlayer();
         return new ResponseEntity<>(responseList, responseHeaders, responseCode);
     }
 
@@ -41,7 +41,7 @@ public class KickerPlayerController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "application/json");
-        List<KickerPlayer> responseList = kickerPlayerService.getAllActive();
+        List<KickerPlayer> responseList = playerService.getAllActivePlayer();
         return new ResponseEntity<>(responseList, responseHeaders, responseCode);
     }
 
@@ -50,7 +50,7 @@ public class KickerPlayerController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "text/plain");
-        String response = kickerPlayerService.delete(kickerPlayer);
+        String response = playerService.deletePlayerByName(kickerPlayer.getUserName());
         return new ResponseEntity<>(response, responseHeaders, responseCode);
     }
 
@@ -59,7 +59,7 @@ public class KickerPlayerController {
         HttpStatus responseCode = HttpStatus.OK;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Type", "text/plain");
-        String response = kickerPlayerService.changeActivity(kickerPlayer);
+        String response = playerService.changePlayerActivityByName(kickerPlayer.getUserName());
         return new ResponseEntity<>(response, responseHeaders, responseCode);
     }
 }

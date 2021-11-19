@@ -61,6 +61,18 @@ public class KickerForecastGameItem implements Comparable{
         this.playerGames = 0;
     }
 
+    public void setGames(int games) {
+        this.games = games;
+    }
+
+    public void setTeamGames(int teamGames) {
+        this.teamGames = teamGames;
+    }
+
+    public void setPlayerGames(int playerGames) {
+        this.playerGames = playerGames;
+    }
+
     public Long getId() {
         return id;
     }

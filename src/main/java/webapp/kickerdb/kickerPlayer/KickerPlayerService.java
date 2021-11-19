@@ -2,81 +2,78 @@ package webapp.kickerdb.kickerPlayer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import webapp.kickerdb.kickerTeam.KickerTeam;
+import webapp.kickerdb.kickerGame.KickerGameRequest;
 import webapp.kickerdb.kickerTeam.KickerTeamService;
-import webapp.kickerdb.kickerforecast.KickerForecastService;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class KickerPlayerService {
 
     @Autowired
-    private KickerPlayerRepository playerRepository;
-
-    @Autowired
     private KickerTeamService teamService;
 
     @Autowired
-    private KickerForecastService forecastService;
+    private KickerPlayerCommunicator playerCommunicator;
 
     private static final String PLAYER_NOT_FOUND = "Player %s not found";
 
-    public String addKickerPlayer(KickerPlayer kickerPlayer) {
-        if (this.playerRepository.findByUserName(kickerPlayer.getUserName()).isPresent())
-            return String.format("Player %s already exist", kickerPlayer.getUserName());
-        kickerPlayer.setActive(true);
-        this.playerRepository.save(kickerPlayer);
-        if (this.playerRepository.findByUserName(kickerPlayer.getUserName()).isPresent()) {
-            List<KickerPlayer> allPlayers = this.getAll();
-            this.teamService.addAllPossibleTeamsOfPlayerList(allPlayers);
-            List<KickerTeam> allPossibleTeams = this.teamService.getAllPossibleTeams();
-            this.forecastService.addAllPossibleGames(allPossibleTeams);
-            return String.format("Player %s added", kickerPlayer.getUserName());
-        }
-        return String.format("Player %s could not be saved", kickerPlayer.getUserName());
+    public String addKickerPlayer(KickerPlayer player) {
+        if (this.playerCommunicator.hasPlayerWithName(player.getUserName()))
+            return String.format("Player %s already exist", player.getUserName());
+        player.setActive(true);
+        Long id = this.playerCommunicator.savePlayer(player);
+        if (!this.playerCommunicator.hasPlayerWithId(id))
+            return String.format("Player %s could not be saved", player.getUserName());
+        List<KickerPlayer> allPlayers = this.playerCommunicator.getAllPlayer();
+        this.teamService.addAllPossibleTeamsWithPlayerList(allPlayers);
+        return String.format("Player %s added with id %s", player.getUserName(), id);
     }
 
-    public Long getKickerPlayerId(String userName){
-        Optional<KickerPlayer> kickerPlayer = this.playerRepository.findByUserName(userName);
-        if (kickerPlayer.isPresent())
-            return kickerPlayer.get().getId();
-        return 0L;
-    }
-
-    public List<KickerPlayer> getAll() {
-        return playerRepository.findAll();
-    }
-
-    public List<KickerPlayer> getAllActive() {
-        return playerRepository.findByActive(true);
-    }
-
-    public String delete(KickerPlayer kickerPlayer) {
-        Long id = getKickerPlayerId(kickerPlayer.getUserName());
-        if (id == 0L)
-            return String.format(PLAYER_NOT_FOUND, kickerPlayer.getUserName());;
-        playerRepository.deleteById(id);
-        return String.format("Player %s deleted", kickerPlayer.getUserName());
+    public String deletePlayerByName(String name) {
+        if (!this.playerCommunicator.hasPlayerWithName(name))
+            return String.format(PLAYER_NOT_FOUND, name);
+        Long id = this.playerCommunicator.getPlayerIdByName(name);
+        this.playerCommunicator.deletePlayerById(id);
+        return String.format("Player %s deleted", name);
     }
 
     @Transactional
-    public String changeActivity(KickerPlayer kickerPlayer) {
-        Long id = getKickerPlayerId(kickerPlayer.getUserName());
-        if (id == 0L)
-            return String.format(PLAYER_NOT_FOUND, kickerPlayer.getUserName());
-        Optional<KickerPlayer> player = playerRepository.findById(id);
-        player.get().setActive(!player.get().isActive());
-        return String.format("Activity for Player %s changed", kickerPlayer.getUserName());
+    public String changePlayerActivityByName(String name) {
+        if (!this.playerCommunicator.hasPlayerWithName(name))
+            return String.format(PLAYER_NOT_FOUND, name);
+        Long id = this.playerCommunicator.getPlayerIdByName(name);
+        KickerPlayer player = this.playerCommunicator.getPlayerById(id);
+        player.setActive(!player.isActive());
+        return String.format("Activity for Player %s changed", name);
     }
 
-    public String getPlayerNameByID(Long id) {
-        return playerRepository.getById(id).getUserName();
+    public List<KickerPlayer> getAllActivePlayer() {
+        return this.playerCommunicator.getAllActivePlayer();
     }
 
-    public KickerPlayer getPlayerByID(Long id) {
-        return playerRepository.getById(id);
+    public List<KickerPlayer> getAllPlayer() {
+        return this.playerCommunicator.getAllPlayer();
+    }
+
+    public boolean findPlayersWithGameRequest(KickerGameRequest gameRequest) {
+        if (!this.playerCommunicator.hasPlayerWithName(gameRequest.getPlayerOne()))
+            return false;
+        if (!this.playerCommunicator.hasPlayerWithName(gameRequest.getPlayerTwo()))
+            return false;
+        if (!this.playerCommunicator.hasPlayerWithName(gameRequest.getPlayerThree()))
+            return false;
+        if (!this.playerCommunicator.hasPlayerWithName(gameRequest.getPlayerFour()))
+            return false;
+        return true;
+    }
+
+    public KickerPlayer getPlayerByName(String name) {
+        return playerCommunicator.getPlayerByName(name);
+    }
+
+    public KickerPlayer getPlayerById(Long id) {
+        return playerCommunicator.getPlayerById(id);
     }
 }

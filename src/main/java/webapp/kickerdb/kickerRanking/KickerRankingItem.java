@@ -1,4 +1,4 @@
-package webapp.kickerdb.kickerGame;
+package webapp.kickerdb.kickerRanking;
 
 import lombok.Getter;
 import lombok.Setter;
