@@ -1,9 +1,12 @@
 package webapp.kickerdb.kickerGame;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
 import java.util.List;
 
+@Component
 public class KickerGameCommunicator {
 
     @Autowired
@@ -23,5 +26,13 @@ public class KickerGameCommunicator {
 
     public List<KickerGame> getAllGamesWithTeamIdInTeamTwo(Long id) {
         return repository.findByTeamTwo(id);
+    }
+
+    public List<KickerGame> getAllGamesWithTeamIdInTeamOneAndTeamIdInTeamTwo(Long teamOneId, Long teamTwoId) {
+        return this.repository.findByTeamOneAndTeamTwo(teamOneId, teamTwoId);
+    }
+
+    public Integer countAllGames() {
+        return repository.findAll().size();
     }
 }

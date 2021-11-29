@@ -27,10 +27,6 @@ public class KickerPlayerCommunicator {
         return repository.findByUserName(name).get();
     }
 
-    public KickerPlayer getPlayerById(Long id) {
-        return repository.getById(id);
-    }
-
     public List<KickerPlayer> getAllPlayer() {
         return repository.findAll();
     }
@@ -45,5 +41,13 @@ public class KickerPlayerCommunicator {
 
     public void deletePlayerById(Long id) {
         repository.deleteById(id);
+    }
+
+    public KickerPlayer getPlayerById(Long id) {
+        return this.repository.findById(id).get();
+    }
+
+    public boolean getPlayerActivity(Long id) {
+        return this.repository.findById(id).get().isActive();
     }
 }

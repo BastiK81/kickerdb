@@ -22,17 +22,36 @@ function buildTable(){
     getJsonFromApi('/kickerGame/ranking')
         .then(data => {
             for (var i = 0; i < data.length; i++){
+                var winsPerGame = 0
+                var plusscore = 0
+                var minusscore = 0
+                if (data[i].games > 0) {
+                    plusscore = data[i].scorePlus / data[i].games
+                    minusscore = data[i].scoreMinus / data[i].games
+                }
+                var active = ""
+                if (data[i].active) {
+                    active = "X"
+                }
                 var row = `<tr>
-                    <td>${i + 1}</td>
-                    <td>${data[i].userName}</td>
-                    <td>${data[i].games}</td>
-                    <td>${data[i].wins}</td>
-                    <td>${data[i].scorePlus}</td>
-                    <td>${data[i].scoreMinus}</td>
+                            <td>${i + 1}</td>
+                            <td>${data[i].userName}</td>
+                            <td>${data[i].games}</td>
+                            <td>${data[i].winsPerGame}</td>
+                            <td>${plusscore}</td>
+                            <td>${minusscore}</td>
+                            <td>${active}</td>
                         </tr>`
                 table.innerHTML += row
             }
-        });
+            
+        }
+    );
+    getJsonFromApi('/kickerGame/gamesCount')
+    .then(data => {
+        document.getElementById("rankingFooter").innerHTML = "Anzah Games: " + data
+        }
+    );
 }
 
 function getForecast(url){
@@ -44,7 +63,6 @@ function setAllUsers(){
     getResponseTextFromApi('/kickerPlayer/getAll')
         .then(data => {
             var dataToJson = JSON.parse(data)
-
                 while (playerSelection.children.length > 0) {
                     playerSelection.removeChild(playerSelection.firstChild);
                 } 
@@ -52,7 +70,7 @@ function setAllUsers(){
                     var opt = new Option(dataToJson[i].userName, i);
                     playerSelection.add(opt,null);
                 }
-                elements.selectedIndex = 0;
+                playerSelection.selectedIndex = 0;
         });
 }
 
@@ -130,7 +148,6 @@ function sendJsonToApi(url, jsonString){
         })
         .then(response => response.text()) 
         .then(restext => {
-            window.alert(restext)
             loadPage()
         });
 }

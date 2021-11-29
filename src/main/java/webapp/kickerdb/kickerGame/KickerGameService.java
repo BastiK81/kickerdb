@@ -21,21 +21,21 @@ public class KickerGameService {
     private KickerTeamService teamService;
 
     @Autowired
-    private KickerGameCommunicator gameCommunicator;
+    private KickerGameCommunicator communicator;
 
     public String addKickerGame(KickerGameRequest gameRequest) {
-        if (new Utilities().hasDoublePlayer(gameRequest))
+        if (new Utilities().hasGameRequestDoublePlayer(gameRequest))
             return String.format("Game Set has double Players");
         if (!this.playerService.findPlayersWithGameRequest(gameRequest))
             return String.format("Game Set has unknown Player");
         KickerGame kickerGame = this.createGameOfGameRequest(gameRequest);
-        Long id = this.gameCommunicator.getSaveGameId(kickerGame);
+        Long id = this.communicator.getSaveGameId(kickerGame);
         return "Game ID " + id.toString() + "  saved";
     }
 
     private KickerGame createGameOfGameRequest(KickerGameRequest gameRequest){
         int winner = new Utilities().getWinner(gameRequest.getScoreOne(), gameRequest.getScoreTwo());
-        KickerPlayer defensivePlayer = playerService.getPlayerByName(gameRequest.getPlayerTwo());
+        KickerPlayer defensivePlayer = playerService.getPlayerByName(gameRequest.getPlayerOne());
         KickerPlayer offensivePlayer = playerService.getPlayerByName(gameRequest.getPlayerTwo());
         Long teamOneId = teamService.getTeamIdWithDefenseAndOffensePlayerId(defensivePlayer.getId(), offensivePlayer.getId());
         defensivePlayer = playerService.getPlayerByName(gameRequest.getPlayerThree());
@@ -49,7 +49,7 @@ public class KickerGameService {
         List<KickerTeam> teams = teamService.getAllTeamsWithPlayerId(id);
         for (KickerTeam team:teams
         ) {
-            List<KickerGame> games = gameCommunicator.getAllGamesWithTeamId(team.getId());
+            List<KickerGame> games = communicator.getAllGamesWithTeamId(team.getId());
             countGames += games.size();
         }
         return countGames;
@@ -60,7 +60,7 @@ public class KickerGameService {
         List<KickerTeam> teams = teamService.getAllTeamsWithPlayerId(id);
         for (KickerTeam team:teams
              ) {
-            games = new Utilities().union(games, gameCommunicator.getAllGamesWithTeamIdInTeamOne(team.getId()));
+            games = new Utilities().union(games, communicator.getAllGamesWithTeamIdInTeamOne(team.getId()));
         }
         return games;
     }
@@ -70,13 +70,22 @@ public class KickerGameService {
         List<KickerTeam> teams = teamService.getAllTeamsWithPlayerId(id);
         for (KickerTeam team:teams
         ) {
-            games = new Utilities().union(games, gameCommunicator.getAllGamesWithTeamIdInTeamTwo(team.getId()));
+            games = new Utilities().union(games, communicator.getAllGamesWithTeamIdInTeamTwo(team.getId()));
         }
         return games;
     }
 
     public int getCountOfAllGamesWithTeamId(Long id) {
-        List<KickerGame> games = gameCommunicator.getAllGamesWithTeamId(id);
+        List<KickerGame> games = communicator.getAllGamesWithTeamId(id);
         return games.size();
+    }
+
+    public int getCountOfAllGamesWithTeamOneAndTeamTwo(Long teamOneId, Long teamTwoId) {
+        return this.communicator.getAllGamesWithTeamIdInTeamOneAndTeamIdInTeamTwo(teamOneId, teamTwoId).size();
+    }
+
+    public Integer countAllGames() {
+        return this.communicator.countAllGames();
+
     }
 }

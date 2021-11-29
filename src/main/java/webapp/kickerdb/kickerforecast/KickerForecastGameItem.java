@@ -29,23 +29,14 @@ public class KickerForecastGameItem implements Comparable{
     private Long teamTwoDefensiveId;
     private Long teamTwoOffensiveId;
     private int games;
+    private int vsGames;
+    private int teamOneGames;
+    private int teamTwoGames;
     private int teamGames;
+    private int teamConstGames;
     private int playerGames;
 
     public KickerForecastGameItem() {
-    }
-
-    public KickerForecastGameItem(Long teamOneId, Long teamOneDefensiveId, Long teamOneOffensiveId, Long teamTwoId, Long teamTwoDefensiveId, Long teamTwoOffensiveId, int games, int teamGames, int playerGames) {
-        super();
-        this.teamOneId = teamOneId;
-        this.teamOneDefensiveId = teamOneDefensiveId;
-        this.teamOneOffensiveId = teamOneOffensiveId;
-        this.teamTwoId = teamTwoId;
-        this.teamTwoDefensiveId = teamTwoDefensiveId;
-        this.teamTwoOffensiveId = teamTwoOffensiveId;
-        this.games = games;
-        this.teamGames = teamGames;
-        this.playerGames = playerGames;
     }
 
     public KickerForecastGameItem(Long teamOneId, Long teamOneDefensiveId, Long teamOneOffensiveId, Long teamTwoId, Long teamTwoDefensiveId, Long teamTwoOffensiveId) {
@@ -59,6 +50,30 @@ public class KickerForecastGameItem implements Comparable{
         this.games = 0;
         this.teamGames = 0;
         this.playerGames = 0;
+        this.teamOneGames = 0;
+        this.teamTwoGames = 0;
+        this.vsGames = 0;
+        this.teamConstGames = 0;
+    }
+
+    public int getTeamOneGames() {
+        return teamOneGames;
+    }
+
+    public int getTeamTwoGames() {
+        return teamTwoGames;
+    }
+
+    public void setTeamConstGames(int teamConstGames) {
+        this.teamConstGames = teamConstGames;
+    }
+
+    public void setTeamOneGames(int teamOneGames) {
+        this.teamOneGames = teamOneGames;
+    }
+
+    public void setTeamTwoGames(int teamTwoGames) {
+        this.teamTwoGames = teamTwoGames;
     }
 
     public void setGames(int games) {
@@ -71,6 +86,10 @@ public class KickerForecastGameItem implements Comparable{
 
     public void setPlayerGames(int playerGames) {
         this.playerGames = playerGames;
+    }
+
+    public void setVsGames(int vsGames) {
+        this.vsGames = vsGames;
     }
 
     public Long getId() {
@@ -103,10 +122,22 @@ public class KickerForecastGameItem implements Comparable{
             if (this.games > other.games) {
                 return 1;
             }
+            if (this.vsGames < other.vsGames) {
+                return -1;
+            }
+            if (this.vsGames > other.vsGames) {
+                return 1;
+            }
             if (this.teamGames < other.teamGames) {
                 return -1;
             }
             if (this.teamGames > other.teamGames) {
+                return 1;
+            }
+            if (this.teamConstGames < other.teamConstGames) {
+                return -1;
+            }
+            if (this.teamConstGames > other.teamConstGames) {
                 return 1;
             }
             if (this.playerGames < other.playerGames) {

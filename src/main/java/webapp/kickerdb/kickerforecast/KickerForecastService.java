@@ -2,12 +2,12 @@ package webapp.kickerdb.kickerforecast;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import webapp.kickerdb.kickerGame.KickerGameRequest;
 import webapp.kickerdb.kickerGame.KickerGameService;
 import webapp.kickerdb.kickerPlayer.KickerPlayer;
 import webapp.kickerdb.kickerPlayer.KickerPlayerService;
 import webapp.kickerdb.kickerTeam.KickerTeam;
 import webapp.kickerdb.kickerTeam.KickerTeamService;
+import webapp.kickerdb.utilities.Utilities;
 
 import java.util.*;
 
@@ -26,20 +26,17 @@ public class KickerForecastService {
     @Autowired
     KickerForecastCommunicator communicator;
 
-    @Autowired
-    private KickerForecastRepository forecastRepository;
-
     public List<KickerPlayer> getTeamForecast() {
-        List<Long> allActivPlayerIds = this.getAllActivePlayerIds();
+        List<Long> allActivePlayerIds = this.getAllActivePlayerIds();
         List<KickerForecastTeamItem> teamItems = getTeamItems();
         List<KickerPlayer> forecast = new ArrayList<>();
         for (KickerForecastTeamItem team : teamItems
         ) {
-            if (allActivPlayerIds.contains(team.getPlayerOffensiveId()) && allActivPlayerIds.contains(team.getPlayerDefensiveId())) {
+            if (allActivePlayerIds.contains(team.getPlayerOffensiveId()) && allActivePlayerIds.contains(team.getPlayerDefensiveId())) {
                 forecast.add(playerService.getPlayerById(team.getPlayerDefensiveId()));
                 forecast.add(playerService.getPlayerById(team.getPlayerOffensiveId()));
-                allActivPlayerIds.remove(team.getPlayerDefensiveId());
-                allActivPlayerIds.remove(team.getPlayerOffensiveId());
+                allActivePlayerIds.remove(team.getPlayerDefensiveId());
+                allActivePlayerIds.remove(team.getPlayerOffensiveId());
             }
             if (forecast.size() == 4)
                 break;
@@ -116,10 +113,100 @@ public class KickerForecastService {
         List<KickerForecastGameItem> allPossibleGames = this.communicator.getAllPossibleGames();
         for (KickerForecastGameItem game:allPossibleGames
              ) {
-            int gamesCounter = this.communicator.getGameCountWithTeamOneIdAndTeamTwoId(game.getTeamOneId(), game.getTeamTwoId());
+            int gamesCounter = this.getCountAllGamesWithFixTeams(game.getTeamOneId(), game.getTeamTwoId());
             game.setGames(gamesCounter);
-            gamesCounter = this.communicator.
+            gamesCounter += this.getCountPlayerConstellation(game);
+            game.setVsGames(gamesCounter);
+            game.setTeamOneGames(this.gameService.getCountOfAllGamesWithTeamId(game.getTeamOneId()));
+            game.setTeamTwoGames(this.gameService.getCountOfAllGamesWithTeamId(game.getTeamTwoId()));
+            game.setTeamGames(game.getTeamOneGames() + game.getTeamTwoGames());
+            gamesCounter = this.getCountAllTeamConstGames(game);
+            game.setTeamConstGames(gamesCounter);
+            gamesCounter = this.gameService.getCountOfAllGamesWithPlayerId(game.getTeamOneDefensiveId());
+            gamesCounter += this.gameService.getCountOfAllGamesWithPlayerId(game.getTeamOneOffensiveId());
+            gamesCounter += this.gameService.getCountOfAllGamesWithPlayerId(game.getTeamTwoDefensiveId());
+            gamesCounter += this.gameService.getCountOfAllGamesWithPlayerId(game.getTeamTwoOffensiveId());
+            game.setPlayerGames(gamesCounter);
         }
-        return
+        Collections.sort(allPossibleGames);
+        List<KickerPlayer> forecast = new ArrayList<>();
+        for (KickerForecastGameItem game:allPossibleGames
+             ) {
+            if (this.allPlayersActive(game)) {
+                forecast.add(this.playerService.getPlayerById(game.getTeamOneDefensiveId()));
+                forecast.add(this.playerService.getPlayerById(game.getTeamOneOffensiveId()));
+                forecast.add(this.playerService.getPlayerById(game.getTeamTwoDefensiveId()));
+                forecast.add(this.playerService.getPlayerById(game.getTeamTwoOffensiveId()));
+                return forecast;
+            }
+        }
+        return forecast;
     }
+
+    private int getCountAllTeamConstGames(KickerForecastGameItem game) {
+        Long switchedTeamOneId = this.teamService.getTeamIdWithDefenseAndOffensePlayerId(game.getTeamOneOffensiveId(), game.getTeamOneDefensiveId());
+        Long switchedTeamTwoId = this.teamService.getTeamIdWithDefenseAndOffensePlayerId(game.getTeamTwoOffensiveId(), game.getTeamTwoDefensiveId());
+        int gameCounter = this.gameService.getCountOfAllGamesWithTeamId(switchedTeamOneId);
+        gameCounter += this.gameService.getCountOfAllGamesWithTeamId(switchedTeamTwoId);
+        return gameCounter;
+    }
+
+    private boolean allPlayersActive(KickerForecastGameItem game) {
+        return this.playerService.getPlayerById(game.getTeamOneDefensiveId()).isActive() &&
+                this.playerService.getPlayerById(game.getTeamOneOffensiveId()).isActive() &&
+                this.playerService.getPlayerById(game.getTeamTwoDefensiveId()).isActive() &&
+                this.playerService.getPlayerById(game.getTeamTwoOffensiveId()).isActive();
+    }
+
+    private int getCountPlayerConstellation(KickerForecastGameItem game) {
+        Long switchedTeamOneId = this.teamService.getTeamIdWithDefenseAndOffensePlayerId(game.getTeamOneOffensiveId(), game.getTeamOneDefensiveId());
+        int gameCounter = this.getCountAllGamesWithFixTeams(game.getTeamTwoId(), switchedTeamOneId);
+        Long switchedTeamTwoId = this.teamService.getTeamIdWithDefenseAndOffensePlayerId(game.getTeamTwoOffensiveId(), game.getTeamTwoDefensiveId());
+        gameCounter += this.getCountAllGamesWithFixTeams(game.getTeamOneId(), switchedTeamTwoId);
+        gameCounter += this.getCountAllGamesWithFixTeams(switchedTeamOneId, switchedTeamTwoId);
+        return gameCounter;
+    }
+
+    private int getCountAllGamesWithFixTeams(Long idOne, Long idTwo) {
+        int gamesCounter = this.gameService.getCountOfAllGamesWithTeamOneAndTeamTwo(idOne, idTwo);
+        gamesCounter += this.gameService.getCountOfAllGamesWithTeamOneAndTeamTwo(idTwo, idOne);
+        return gamesCounter;
+    }
+
+    public void addAllPossibleGames(List<KickerTeam> allPossibleTeams) {
+        for (int i = 0; i < allPossibleTeams.size(); i++) {
+            for (int j = 0; j < allPossibleTeams.size(); j++) {
+                if (i == j)
+                    continue;
+                KickerTeam teamOne = allPossibleTeams.get(i);
+                KickerTeam teamTwo = allPossibleTeams.get(j);
+                if (new Utilities().hasTeamsDoublePlayer(teamOne, teamTwo))
+                    continue;
+                if (!this.hasGameInForecast(teamOne.getId(), teamTwo.getId()))
+                    continue;
+                KickerForecastGameItem game = setForecastGame(teamOne, teamTwo);
+                communicator.saveKickerforecastGameItem(game);
+            }
+        }
+    }
+
+    private KickerForecastGameItem setForecastGame(KickerTeam teamOne, KickerTeam teamTwo) {
+        KickerForecastGameItem game = new KickerForecastGameItem(
+                                                            teamOne.getId(),
+                                                            teamOne.getPlayerDefensive(),
+                                                            teamOne.getPlayerOffensive(),
+                                                            teamTwo.getId(),
+                                                            teamTwo.getPlayerDefensive(),
+                                                            teamTwo.getPlayerOffensive()
+                                                            );
+        return game;
+    }
+
+
+    private boolean hasGameInForecast(Long idTeamOne, Long idTeamTwo) {
+        boolean checkOne = communicator.hasGameWithTeamIdOneAndTeamIdTwo(idTeamOne, idTeamTwo);
+        boolean checkTwo = communicator.hasGameWithTeamIdOneAndTeamIdTwo(idTeamTwo, idTeamOne);
+        return checkOne && checkTwo;
+    }
+
 }

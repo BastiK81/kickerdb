@@ -1,9 +1,11 @@
 package webapp.kickerdb.kickerforecast;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class KickerForecastCommunicator {
 
     @Autowired
@@ -13,7 +15,12 @@ public class KickerForecastCommunicator {
         return repository.findAll();
     }
 
-    public int getGameCountWithTeamOneIdAndTeamTwoId(Long idOne, Long idTwo) {
-        return repository.findByTeamOneIdAndTeamTwoId(idOne, idTwo).size();
+    public boolean hasGameWithTeamIdOneAndTeamIdTwo(Long idTeamOne, Long idTeamTwo) {
+        return repository.findByTeamOneIdAndTeamTwoId(idTeamOne, idTeamTwo).isEmpty();
+    }
+
+    public void saveKickerforecastGameItem(KickerForecastGameItem game) {
+        repository.save(game);
+
     }
 }

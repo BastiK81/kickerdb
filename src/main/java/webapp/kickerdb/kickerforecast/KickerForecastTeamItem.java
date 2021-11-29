@@ -28,13 +28,11 @@ public class KickerForecastTeamItem implements Comparable {
             if (this.games > other.games) {
                 return 1;
             }
-            if (this.games == other.games) {
-                if (this.singleGames < other.singleGames) {
-                    return -1;
-                }
-                if (this.singleGames > other.singleGames) {
-                    return 1;
-                }
+            if (this.singleGames < other.singleGames) {
+                return -1;
+            }
+            if (this.singleGames > other.singleGames) {
+                return 1;
             }
         }
         return 0;

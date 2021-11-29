@@ -3,7 +3,9 @@ package webapp.kickerdb.kickerPlayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import webapp.kickerdb.kickerGame.KickerGameRequest;
+import webapp.kickerdb.kickerTeam.KickerTeam;
 import webapp.kickerdb.kickerTeam.KickerTeamService;
+import webapp.kickerdb.kickerforecast.KickerForecastService;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -13,6 +15,9 @@ public class KickerPlayerService {
 
     @Autowired
     private KickerTeamService teamService;
+
+    @Autowired
+    private KickerForecastService forecastService;
 
     @Autowired
     private KickerPlayerCommunicator playerCommunicator;
@@ -28,6 +33,8 @@ public class KickerPlayerService {
             return String.format("Player %s could not be saved", player.getUserName());
         List<KickerPlayer> allPlayers = this.playerCommunicator.getAllPlayer();
         this.teamService.addAllPossibleTeamsWithPlayerList(allPlayers);
+        List<KickerTeam> allPossibleTeams = this.teamService.getAllTeams();
+        this.forecastService.addAllPossibleGames(allPossibleTeams);
         return String.format("Player %s added with id %s", player.getUserName(), id);
     }
 
@@ -74,6 +81,10 @@ public class KickerPlayerService {
     }
 
     public KickerPlayer getPlayerById(Long id) {
-        return playerCommunicator.getPlayerById(id);
+        return this.playerCommunicator.getPlayerById(id);
+    }
+
+    public boolean getActivity(Long id) {
+        return this.playerCommunicator.getPlayerActivity(id);
     }
 }

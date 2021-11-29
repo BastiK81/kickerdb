@@ -14,7 +14,7 @@ public class KickerTeamService {
     private KickerForecastService forecastService;
 
     @Autowired
-    private KickerTeamCommunicator teamCommunicator;
+    private KickerTeamCommunicator communicator;
 
     public void addAllPossibleTeamsWithPlayerList(List<KickerPlayer> allPlayers) {
         for (int i = 0; i < allPlayers.size(); i++) {
@@ -23,25 +23,23 @@ public class KickerTeamService {
                     continue;
                 Long defensivePlayerId = allPlayers.get(i).getId();
                 Long offensivePlayerId = allPlayers.get(j).getId();
-                if (this.teamCommunicator.hasTeamWithDefenseAndOffensePlayer(defensivePlayerId, offensivePlayerId))
-                    this.teamCommunicator.saveTeam(new KickerTeam(defensivePlayerId, offensivePlayerId));
+                if (!this.communicator.hasTeamWithDefenseAndOffensePlayer(defensivePlayerId, offensivePlayerId))
+                    this.communicator.saveTeam(new KickerTeam(defensivePlayerId, offensivePlayerId));
             }
         }
-        List<KickerTeam> allPossibleTeams = this.teamCommunicator.getAllTeams();
-        this.forecastService.addAllPossibleGames(allPossibleTeams);
     }
 
     public Long getTeamIdWithDefenseAndOffensePlayerId(Long defensiveId, Long offensiveId) {
-        if (this.teamCommunicator.hasTeamWithDefenseAndOffensePlayer(defensiveId,offensiveId))
-            return this.teamCommunicator.getTeamIdWithDefensiveAndOffensivePlayerId(defensiveId, offensiveId);
-        return this.teamCommunicator.saveTeam(new KickerTeam(defensiveId, offensiveId));
+        if (this.communicator.hasTeamWithDefenseAndOffensePlayer(defensiveId,offensiveId))
+            return this.communicator.getTeamIdWithDefensiveAndOffensivePlayerId(defensiveId, offensiveId);
+        return this.communicator.saveTeam(new KickerTeam(defensiveId, offensiveId));
     }
 
     public List<KickerTeam> getAllTeamsWithPlayerId(Long id) {
-        return this.teamCommunicator.getAllTeamsWithDefensiveOrOffensivePlayerId(id, id);
+        return this.communicator.getAllTeamsWithDefensiveOrOffensivePlayerId(id, id);
     }
 
     public List<KickerTeam> getAllTeams() {
-        return teamCommunicator.getAllTeams();
+        return communicator.getAllTeams();
     }
 }
