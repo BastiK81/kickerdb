@@ -137,9 +137,14 @@ public class KickerForecastService {
                 forecast.add(this.playerService.getPlayerById(game.getTeamOneOffensiveId()));
                 forecast.add(this.playerService.getPlayerById(game.getTeamTwoDefensiveId()));
                 forecast.add(this.playerService.getPlayerById(game.getTeamTwoOffensiveId()));
+                forecast = getSortedForecast(forecast);
                 return forecast;
             }
         }
+        return forecast;
+    }
+
+    private List<KickerPlayer> getSortedForecast(List<KickerPlayer> forecast) {
         return forecast;
     }
 

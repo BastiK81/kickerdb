@@ -10,6 +10,11 @@ const getJsonFromApi = async(url) => {
     return data;
 }
 
+function round(num) {
+    var m = Number((Math.abs(num) * 100).toPrecision(15));
+    return Math.round(m) / 100 * Math.sign(num);
+}
+
 function loadPage(){
     setAllUsers()
     buildTable()
@@ -37,9 +42,9 @@ function buildTable(){
                             <td>${i + 1}</td>
                             <td>${data[i].userName}</td>
                             <td>${data[i].games}</td>
-                            <td>${data[i].winsPerGame}</td>
-                            <td>${plusscore}</td>
-                            <td>${minusscore}</td>
+                            <td>${round(data[i].winsPerGame)}</td>
+                            <td>${round(plusscore)}</td>
+                            <td>${round(minusscore)}</td>
                             <td>${active}</td>
                         </tr>`
                 table.innerHTML += row

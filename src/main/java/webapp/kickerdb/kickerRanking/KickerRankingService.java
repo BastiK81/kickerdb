@@ -28,7 +28,7 @@ public class KickerRankingService {
         List<KickerRankingItem> ranking = new ArrayList<>();
         for (KickerPlayer player:playerService.getAllPlayer()
         ) {
-            KickerRankingItem rankingItem = new KickerRankingItem(player.getId(), player.getUserName(), 0,0,0F,0,0F,0, false);
+            KickerRankingItem rankingItem = new KickerRankingItem(player.getId(), player.getUserName(), 0,0,0F,0,0F,0, 0F, false);
             for (KickerGame game:gameService.getAllGamesWithPlayerIdInTeamOne(player.getId())
             ) {
                 rankingItem.setGames(rankingItem.getGames() + 1);
@@ -52,9 +52,11 @@ public class KickerRankingService {
             if (rankingItem.getGames() > 0) {
                 rankingItem.setWinsPerGame(((float) rankingItem.getWins()/ (float) rankingItem.getGames()));
                 rankingItem.setScorePerGame(((float) rankingItem.getScorePlus() / (float) rankingItem.getGames()));
+                rankingItem.setScorePerGameMinus(((float) rankingItem.getScoreMinus() / (float) rankingItem.getGames()));
             } else {
                 rankingItem.setWinsPerGame(0F);
                 rankingItem.setScorePerGame(0F);
+                rankingItem.setScorePerGameMinus(0F);
             }
             rankingItem.setActive(this.playerService.getActivity(rankingItem.getId()));
             ranking.add(rankingItem);
